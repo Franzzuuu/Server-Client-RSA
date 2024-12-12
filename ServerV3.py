@@ -24,6 +24,9 @@ class ServerMessengerGUI:
         self.chat_area = Text(self.root, wrap=tk.WORD, state='disabled', height=20, width=50, font=("Arial", 12))
         self.chat_area.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
 
+        self.chat_area.tag_config("you", foreground="red", font=("Arial", 12, "bold"))
+        self.chat_area.tag_config("client", foreground="blue", font=("Arial", 12, "bold"))
+
         # Scrollbar
         self.scrollbar = Scrollbar(self.root, command=self.chat_area.yview)
         self.chat_area['yscrollcommand'] = self.scrollbar.set
@@ -35,18 +38,17 @@ class ServerMessengerGUI:
         self.message_entry.bind("<Return>", self.send_message)
 
         # Create the send button
-        self.send_icon = PhotoImage(file="send_icon.png")  # Replace with your icon file name
+        self.send_icon = PhotoImage(file="send_icon.png")  
         self.send_button = Button(
             self.root,
             image=self.send_icon,
             command=self.send_message,
-            borderwidth=0,  # Removes button border
-            background="white",  # Match the background color of your GUI
-            activebackground="lightgray",  # Background color when clicked
+            borderwidth=0,  
+            background="white",  
+            activebackground="lightgray",  
         )
         self.send_button.grid(row=1, column=1, padx=10, pady=10)
 
-        # Bind hover effects after the button is created
         self.send_button.bind("<Enter>", lambda e: self.send_button.config(background="lightblue"))
         self.send_button.bind("<Leave>", lambda e: self.send_button.config(background="white"))
 
@@ -55,13 +57,13 @@ class ServerMessengerGUI:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.start_server()
 
-    def append_message(self, message):
+    def append_message(self, message, tag=None):
         self.chat_area.config(state='normal')
-        self.chat_area.insert(END, message + "\n")
+        self.chat_area.insert(END, message + "\n", tag)
         self.chat_area.config(state='disabled')
         self.chat_area.see(END)
 
-    def send_message(self, event=None):  # Accept an optional event argument
+    def send_message(self, event=None):  
         message = self.message_entry.get()
         if message and self.remote_public_key:
             try:
@@ -75,7 +77,7 @@ class ServerMessengerGUI:
                     )
                 )
                 self.connection.sendall(encrypted_message)
-                self.append_message(f"You: {message}")
+                self.append_message(f"You: {message}", "you")  
                 self.message_entry.delete(0, END)
             except Exception as e:
                 self.append_message(f"Error sending message: {e}")
@@ -95,7 +97,7 @@ class ServerMessengerGUI:
                         label=None
                     )
                 )
-                self.append_message(f"Client: {decrypted_message.decode()}")
+                self.append_message(f"Client: {decrypted_message.decode()}", "client")  
             except Exception as e:
                 self.append_message(f"Error receiving message: {e}")
                 break
